@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+/* Identidade visual do CrediScope (mesmas cores do layout em docs/telas) */
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+
+  --color-primary-50: #f4f3ff;
+  --color-primary-100: #eef0ff;
+  --color-primary-500: #6d5dfc;
+  --color-primary-600: #4b3fe0;
+  --color-accent-500: #4f8cff;
+  --color-teal-brand: #12b5a6;
+
+  --color-ink: #0b1020;
+  --color-page: #f4f5fa;
+  --color-line: #eaecf2;
+}
+
+@layer base {
+  body {
+    @apply bg-page text-ink antialiased;
+  }
+}
+
+/* Classes reutilizáveis (Tailwind v4 usa @utility para isso) */
+@utility card {
+  @apply rounded-[20px] border border-line bg-white p-5 shadow-[0_1px_3px_rgba(16,24,40,0.04)];
+}
+@utility btn {
+  @apply inline-flex h-11 items-center gap-2 rounded-xl px-4 text-sm font-bold transition;
+}
+@utility btn-primary {
+  @apply btn bg-gradient-to-br from-primary-500 to-accent-500 text-white shadow-lg shadow-primary-500/30 hover:brightness-105;
+}
+@utility btn-secondary {
+  @apply btn border border-line bg-white text-slate-700 hover:bg-slate-50;
+}
+
+/* Tabela padrão do sistema */
+@utility tabela {
+  @apply w-full border-separate border-spacing-0 text-[13.5px];
+  & th {
+    @apply whitespace-nowrap border-b border-line bg-slate-50 px-3 py-2.5 text-left text-xs font-bold text-slate-500;
+  }
+  & th:first-child { @apply rounded-tl-xl; }
+  & th:last-child { @apply rounded-tr-xl; }
+  & td {
+    @apply whitespace-nowrap border-b border-slate-100 px-3 py-2.5 align-middle;
+  }
+  & tr:last-child td { @apply border-b-0; }
+}
