@@ -22,9 +22,9 @@ const usoPct = computed(() => Math.min(100, Math.round((consultasMes.value / EMP
 const auth = useAuthStore()
 const router = useRouter()
 
-function sair() {
-  auth.sair()
-  router.push({ name: 'login' })
+async function sair() {
+  await auth.sair()
+  router.push({ name: 'login', query: { motivo: 'saiu' } })
 }
 </script>
 

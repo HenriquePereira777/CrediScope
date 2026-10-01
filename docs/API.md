@@ -1,16 +1,16 @@
 # API · CrediScope
+Base: `http://localhost:8080/api`. Todas as rotas, exceto as marcadas como **pública**, exigem estar logado.
 
-Base: `http://localhost:8080/api`. Todas as rotas, exceto as marcadas como **pública**, exigem o cabeçalho:
-
-```
-Authorization: Bearer <token>
-```
+**Como funciona a sessão:** o login grava o cookie `CREDISCOPE_SESSAO` (`HttpOnly`, `SameSite=Strict`, `Path=/api`).
+O navegador envia esse cookie sozinho em todas as chamadas. O token **nunca** aparece no corpo das respostas
+e o JavaScript da página não consegue lê-lo.
 
 ## Autenticação
 | Método | Rota | Descrição |
 |---|---|---|
-| POST | `/auth/login` (pública) | `{ "email", "senha" }` → `{ token, expiraEmMinutos, usuario }` |
-| GET | `/auth/me` | Dados do usuário logado |
+| POST | `/auth/login` (pública) | `{ "email", "senha" }` → grava o cookie da sessão e devolve `{ usuario, expiraEm }` |
+| GET | `/auth/me` | `{ usuario, expiraEm }` da sessão atual · 401 se não houver sessão válida |
+| POST | `/auth/logout` (pública) | Apaga o cookie da sessão · responde 204 |
 
 ## Consultas
 | Método | Rota | Descrição |

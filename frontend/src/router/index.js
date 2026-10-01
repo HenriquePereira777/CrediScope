@@ -29,12 +29,29 @@ const router = createRouter({
   routes,
 })
 
-// Bloqueia as telas do sistema para quem não está logado
-router.beforeEach((to) => {
+// Controle de acesso às telas
+router.beforeEach(async (to) => {
   const auth = useAuthStore()
-  if (!to.meta.publica && !auth.estaLogado) {
-    return { name: 'login', query: { voltar: to.fullPath } }
+
+  // Na primeira navegação, pergunta ao backend se já existe sessão (cookie válido)
+  await auth.verificarSessao()
+
+  // Telas públicas (login, verificação). Quem já está logado não precisa ver o login.
+  if (to.meta.publica) {
+    if (to.name === 'login' && auth.estaLogado) return { name: 'painel' }
+    return true
   }
+
+  // Telas do sistema: exige sessão válida
+  if (!auth.estaLogado) {
+    const expirou = auth.sessaoExpirada()
+    auth.limpar()
+    return {
+      name: 'login',
+      query: { voltar: to.fullPath, ...(expirou ? { motivo: 'expirada' } : {}) },
+    }
+  }
+  return true
 })
 
 export default router
