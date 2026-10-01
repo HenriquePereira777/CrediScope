@@ -2,27 +2,32 @@ import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
 import router from '@/router'
 
-/** Cliente HTTP único do sistema. Todos os services usam este objeto. */
+/**
+ * Cliente HTTP único do sistema. Todos os services usam este objeto.
+ * O cookie da sessão é enviado automaticamente pelo navegador (withCredentials).
+ */
 const http = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '/api',
   timeout: 30000,
+  withCredentials: true,
 })
 
-// Envia o token JWT em todas as requisições
-http.interceptors.request.use((config) => {
-  const auth = useAuthStore()
-  if (auth.token) config.headers.Authorization = `Bearer ${auth.token}`
-  return config
-})
-
-// Sessão expirada → volta para o login
+// 401 fora das rotas de autenticação = sessão expirou ou foi encerrada → volta para o login
 http.interceptors.response.use(
   (resposta) => resposta,
   (erro) => {
-    const ehLogin = erro.config?.url?.includes('/auth/login')
-    if (erro.response?.status === 401 && !ehLogin) {
-      useAuthStore().sair()
-      router.push({ name: 'login' })
+    const rotaDeAuth = erro.config?.url?.startsWith('/auth/')
+    if (erro.response?.status === 401 && !rotaDeAuth) {
+      const auth = useAuthStore()
+      const tinhaSessao = !!auth.usuario
+      auth.limpar()
+      const atual = router.currentRoute.value
+      if (atual.name !== 'login') {
+        router.push({
+          name: 'login',
+          query: { voltar: atual.fullPath, ...(tinhaSessao ? { motivo: 'expirada' } : {}) },
+        })
+      }
     }
     return Promise.reject(erro)
   },
