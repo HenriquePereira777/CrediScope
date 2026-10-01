@@ -28,9 +28,14 @@ app:
   cors:
     allowed-origins: ${CORS_ORIGINS:http://localhost:5173}
   jwt:
-    secret: ${JWT_SECRET:troque-este-segredo-em-producao-com-no-minimo-32-caracteres}
-    expiracao-minutos: ${JWT_EXPIRACAO_MINUTOS:480}
-
+    secret: ${CREDISCOPE_JWT_SECRET:troque-este-segredo-em-producao-com-no-minimo-32-caracteres}
+    expiracao-minutos: ${CREDISCOPE_JWT_EXPIRACAO_MINUTOS:480}
+  sessao:
+    # Cookie HttpOnly onde fica o token de login
+    cookie-nome: CREDISCOPE_SESSAO
+    # true = cookie só trafega em HTTPS. Deixe false em desenvolvimento (http://localhost)
+    # e true em produção.
+    cookie-seguro: ${CREDISCOPE_COOKIE_SEGURO:false}
 serasa:
   # mock = dados fictícios (desenvolvimento) | api = chama a Serasa de verdade
   modo: ${SERASA_MODO:mock}
