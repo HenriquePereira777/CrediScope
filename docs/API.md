@@ -56,11 +56,19 @@ Sempre no formato:
 | 422 | Regra de negócio (ex.: acima do limite de aprovação) |
 
 ## Testando pelo terminal
-```bash
-TOKEN=$(curl -s -X POST localhost:8080/api/auth/login -H "Content-Type: application/json" \
-  -d '{"email":"admin@crediscope.local","senha":"admin123"}' | jq -r .token)
+O `-c` salva o cookie num arquivo (como o navegador faria) e o `-b` envia esse cookie.
 
-curl -s -X POST localhost:8080/api/consultas -H "Authorization: Bearer $TOKEN" \
+​```bash
+# login (salva o cookie)
+curl -c /tmp/cookie.txt -X POST localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@crediscope.local","senha":"admin123"}'
+
+# chamada autenticada (envia o cookie)
+curl -b /tmp/cookie.txt -X POST localhost:8080/api/consultas \
   -H "Content-Type: application/json" \
   -d '{"documento":"11.222.333/0001-81","tipo":"COMPLETO","finalidade":"Venda a prazo","monitorar":true}'
-```
+
+# sair
+curl -b /tmp/cookie.txt -X POST localhost:8080/api/auth/logout
+​```
