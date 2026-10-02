@@ -1,22 +1,27 @@
 # CrediScope · ambiente completo
 #   Só o banco (para desenvolver):  docker compose up -d postgres
 #   Tudo (banco + API + web):       docker compose up -d --build
+#
+# As variáveis vêm do arquivo .env (copie de .env.example).
+# Todas começam com CREDISCOPE_ para não conflitar com outros projetos.
 
 services:
   postgres:
     image: postgres:17-alpine
     container_name: crediscope-db
     environment:
-      POSTGRES_DB: ${DB_NAME:-crediscope}
-      POSTGRES_USER: ${DB_USER:-crediscope}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-crediscope}
+      POSTGRES_DB: ${CREDISCOPE_DB_NAME:-crediscope}
+      POSTGRES_USER: ${CREDISCOPE_DB_USER:-crediscope}
+      POSTGRES_PASSWORD: ${CREDISCOPE_DB_PASSWORD:-crediscope}
       TZ: America/Sao_Paulo
     ports:
-      - "5433:5432"
+      # 5433 no computador → 5432 dentro do container
+      # (5433 para não brigar com um PostgreSQL já instalado na máquina)
+      - "${CREDISCOPE_DB_PORTA:-5433}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-crediscope} -d ${DB_NAME:-crediscope}"]
+      test: ["CMD-SHELL", "pg_isready -U ${CREDISCOPE_DB_USER:-crediscope} -d ${CREDISCOPE_DB_NAME:-crediscope}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -28,16 +33,18 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
-      DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-crediscope}
-      DB_USER: ${DB_USER:-crediscope}
-      DB_PASSWORD: ${DB_PASSWORD:-crediscope}
-      JWT_SECRET: ${JWT_SECRET}
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8081}
-      SERASA_MODO: ${SERASA_MODO:-mock}
-      SERASA_BASE_URL: ${SERASA_BASE_URL:-}
-      SERASA_CLIENT_ID: ${SERASA_CLIENT_ID:-}
-      SERASA_CLIENT_SECRET: ${SERASA_CLIENT_SECRET:-}
+      SPRING_PROFILES_ACTIVE: prod
+      # dentro do Docker o banco é acessado pelo nome do serviço, na porta interna 5432
+      CREDISCOPE_DB_URL: jdbc:postgresql://postgres:5432/${CREDISCOPE_DB_NAME:-crediscope}
+      CREDISCOPE_DB_USER: ${CREDISCOPE_DB_USER:-crediscope}
+      CREDISCOPE_DB_PASSWORD: ${CREDISCOPE_DB_PASSWORD:-crediscope}
+      CREDISCOPE_JWT_SECRET: ${CREDISCOPE_JWT_SECRET:-troque-este-segredo-em-producao-com-no-minimo-32-caracteres}
+      CREDISCOPE_COOKIE_SEGURO: ${CREDISCOPE_COOKIE_SEGURO:-false}
+      CREDISCOPE_CORS_ORIGINS: ${CREDISCOPE_CORS_ORIGINS_DOCKER:-http://localhost:8081}
+      CREDISCOPE_SERASA_MODO: ${CREDISCOPE_SERASA_MODO:-mock}
+      CREDISCOPE_SERASA_BASE_URL: ${CREDISCOPE_SERASA_BASE_URL:-}
+      CREDISCOPE_SERASA_CLIENT_ID: ${CREDISCOPE_SERASA_CLIENT_ID:-}
+      CREDISCOPE_SERASA_CLIENT_SECRET: ${CREDISCOPE_SERASA_CLIENT_SECRET:-}
       TZ: America/Sao_Paulo
     ports:
       - "8080:8080"
